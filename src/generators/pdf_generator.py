@@ -10,7 +10,6 @@ class PDFGenerator:
  
     
     def __init__(self):
-        """Inicializa el generador de PDFs."""
         self.logger = Logger.get_logger(__name__)
         self.output_folder = PDF_OUTPUT_FOLDER
         self.output_folder.mkdir(exist_ok=True)
@@ -20,20 +19,18 @@ class PDFGenerator:
                                 document_groups: List[Dict]) -> List[Dict]:
         
         if not document_groups:
-            self.logger.warning(f"⚠️ No hay grupos de documentos para {pdf_path.name}")
+            self.logger.warning(f"* No hay grupos de documentos para {pdf_path.name}")
             return []
         
         pdf_name = pdf_path.stem
         
         output_folder = self.output_folder
         output_folder.mkdir(exist_ok=True)
-        
-        self.logger.info(f"✂️ Generando PDF(s) separados: {pdf_path.name}")
 
         try:
             pdf_document = fitz.open(pdf_path)
         except Exception as e:
-            self.logger.error(f"❌ Error abriendo PDF {pdf_path.name}: {str(e)}")
+            self.logger.error(f"X Error abriendo PDF {pdf_path.name}: {str(e)}")
             return []
         
         generated_pdfs = []
@@ -77,10 +74,10 @@ class PDFGenerator:
                 )
                 
             except Exception as e:
-                self.logger.error(f"❌ Error generando PDF {doc_type}: {str(e)}")
+                self.logger.error(f"X  Error generando PDF {doc_type}: {str(e)}")
                 continue
         
         pdf_document.close()
         
-        self.logger.info(f"✓ Generados {len(generated_pdfs)} PDFs en: {output_folder}")
+        self.logger.info(f"✓ Generados {len(generated_pdfs)} PDF")
         return generated_pdfs

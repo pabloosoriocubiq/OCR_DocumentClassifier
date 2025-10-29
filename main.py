@@ -8,7 +8,6 @@ from src.config import (
     PDF_INPUT_FOLDER,
     LOG_FILE,
     LOG_LEVEL,
-    ENABLE_PARALLEL_PROCESSING,
     ENABLE_ROI_OCR, ANGLE_CONFIDENCE_THRESHOLD
 )
 from src.utils.logger import setup_logging
@@ -16,40 +15,28 @@ from src.converters.pdf_converter import PDFConverter
 from src.processors.ocr_processor import OCRProcessor
 from src.processors.classifier import DocumentClassifier
 from src.generators.pdf_generator import PDFGenerator
-from src.processors.parallel_processor import ParallelProcessor
-
 
 class DocumentProcessor:
     
     def __init__(self):
-        self.logger = setup_logging(LOG_FILE, LOG_LEVEL)
-    
-        self.logger.info("  Inicializando sistema...")
         
+        self.logger = setup_logging(LOG_FILE, LOG_LEVEL)
+        self.logger.info("  Inicializando sistema...")     
         self.converter = PDFConverter()
         self.ocr = OCRProcessor()
         self.classifier = DocumentClassifier()
         self.generator = PDFGenerator()
-        
-        if ENABLE_PARALLEL_PROCESSING:
-            self.parallel_processor = ParallelProcessor()
-        
         self.logger.info("✔ Sistema listo\n")
     
-    def process_single_pdf(self, pdf_path: Path) -> Dict:
-        converter = PDFConverter()
-        ocr = OCRProcessor()
-        classifier = DocumentClassifier()
-        generator = PDFGenerator()
-        logger = setup_logging(LOG_FILE, LOG_LEVEL)
+    def process_pdf(self, pdf_path: Path) -> Dict:
         
-        logger.info("="*70)
-        logger.info(f"PROCESANDO: {pdf_path.name}")
-        logger.info("="*70)
+        self.logger.info("="*70)
+        self.logger.info(f"PROCESANDO: {pdf_path.name}")
+        self.logger.info("="*70)
         
         start_time = datetime.now()
         
-        pdf_info = converter.get_pdf_info(pdf_path)
+        pdf_info = self.converter.get_pdf_info(pdf_path)
         if not pdf_info['success']:
             return {'success': False, 'error': 'No se pudo leer el PDF ✗'}
         
@@ -57,28 +44,28 @@ class DocumentProcessor:
         classifications = []
         roi_count = 0
         
-        for page_data in converter.convert_pdf_pages(pdf_path):
+        for page_data in self.converter.convert_pdf_pages(pdf_path):
             if not page_data['success']:
                 continue
             
             page_num = page_data['page_number']
             image = page_data['image']
             
-            logger.info(f"📄 Procesando página {page_num}/{total_pages}")
+            self.logger.info(f"📄 Procesando página {page_num}/{total_pages}")
             
             if ENABLE_ROI_OCR:
                 
-                angle, ocr_angle_confidence = ocr.document_orientation_angle(image)
+                angle, ocr_angle_confidence = self.ocr.document_orientation_angle(image)
                 
                 if angle > 0 and ocr_angle_confidence > ANGLE_CONFIDENCE_THRESHOLD:
-                    image = ocr.rotate_image_by_angle(image, angle, ocr_angle_confidence)
+                    image = self.ocr.rotate_image_by_angle(image, angle, ocr_angle_confidence)
                     img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)               
                     image = Image.fromarray(img)
-                    text, ocr_confidence, used_roi_only = ocr.extract_text_roi_strategy(image)
+                    text, ocr_confidence, used_roi_only = self.ocr.extract_text_roi_strategy(image)
                 else:
-                    text, ocr_confidence, used_roi_only = ocr.extract_text_roi_strategy(image)  
+                    text, ocr_confidence, used_roi_only = self.ocr.extract_text_roi_strategy(image)  
                              
-                doc_type_tmp, primary_found_tmp, secondary_found_tmp, total_keywords_tmp, num_candidates_tmp = classifier.classify_page(text)
+                doc_type_tmp, primary_found_tmp, secondary_found_tmp, total_keywords_tmp, num_candidates_tmp = self.classifier.classify_page(text)
                 keywords = primary_found_tmp + secondary_found_tmp
                 roi_usage = False
                     
@@ -87,7 +74,7 @@ class DocumentProcessor:
                 elif doc_type_tmp == "UNKNOWN" and len(keywords) == 0:
                     roi_usage = False
                 else:
-                    doc_config = classifier.document_types.get(doc_type_tmp, {})
+                    doc_config = self.classifier.document_types.get(doc_type_tmp, {})
                     is_functional = doc_config.get('functional', False)
                     min_secondary = doc_config.get('min_secondary_matches', 0)
                         
@@ -110,20 +97,21 @@ class DocumentProcessor:
                     keywords = primary_found + secondary_found
                     roi_count += 1
                 else:
-                    text, ocr_confidence = ocr.extract_text_from_image(image)                   
-                    doc_type, primary_found, secondary_found, total_keywords, num_candidates = classifier.classify_page(text)
+                    text, ocr_confidence = self.ocr.extract_text_from_image(image)
+                    image.save('demo.png')
+                    doc_type, primary_found, secondary_found, total_keywords, num_candidates = self.classifier.classify_page(text)
                     keywords = primary_found + secondary_found
                     used_roi_only = False 
             else:
-                angle, ocr_angle_confidence = ocr.document_orientation_angle(image)
-                image = ocr.rotate_image_by_angle(image, angle, ocr_angle_confidence)
-                text, ocr_confidence = ocr.extract_text_from_image(image)
-                doc_type, primary_found, secondary_found, total_keywords, num_candidates = classifier.classify_page(text)
+                angle, ocr_angle_confidence = self.ocr.document_orientation_angle(image)
+                image = self.ocr.rotate_image_by_angle(image, angle, ocr_angle_confidence)
+                text, ocr_confidence = self.ocr.extract_text_from_image(image)
+                doc_type, primary_found, secondary_found, total_keywords, num_candidates = self.classifier.classify_page(text)
                 keywords = primary_found + secondary_found
                 used_roi_only = False 
             
 
-            is_functional = classifier.is_functional(doc_type)
+            is_functional = self.classifier.is_functional(doc_type)
 
             classification = {
                 'page_number': page_num,
@@ -138,7 +126,7 @@ class DocumentProcessor:
             
             status = "✓" if is_functional else "✗"
             roi_indicator = " [ROI]" if used_roi_only else ""
-            logger.info(
+            self.logger.info(
                 f"   {doc_type} {status}{roi_indicator} "
                 f"(keywords: {total_keywords})"
             )
@@ -146,15 +134,15 @@ class DocumentProcessor:
             del image
             gc.collect()
         
-        document_groups = classifier.group_consecutive_pages(classifications)
+        document_groups = self.classifier.group_consecutive_pages(classifications)
 
-        classifier.save_classification_report(
+        self.classifier.save_classification_report(
             pdf_path.name,
             classifications,
             document_groups
         )
         
-        generated_pdfs = generator.generate_separated_pdfs(
+        generated_pdfs = self.generator.generate_separated_pdfs(
             pdf_path,
             document_groups
         )
@@ -174,14 +162,14 @@ class DocumentProcessor:
             'success': True
         }
         
-        logger.info(f"\n✓ Completado en {processing_time:.2f}s")
-        logger.info(
+        self.logger.info(f"\n✓ Completado en {processing_time:.2f}s")
+        self.logger.info(
             f"   Páginas: {functional_pages} funcionales, "
             f"{total_pages - functional_pages} eliminadas"
         )
         if ENABLE_ROI_OCR and roi_count > 0:
-            logger.info(f"   Optimización ROI: {roi_count}/{total_pages} páginas")
-        logger.info(f"   PDFs generados: {len(generated_pdfs)}\n")
+            self.logger.info(f"   Optimización ROI: {roi_count}/{total_pages} páginas")
+        self.logger.info(f"   PDFs generados: {len(generated_pdfs)}\n")
         
         return result
     
@@ -199,23 +187,17 @@ class DocumentProcessor:
         
         overall_start = datetime.now()
         
-        if ENABLE_PARALLEL_PROCESSING and len(pdf_files) > 1:
-            self.logger.info(f" Usando procesamiento paralelo\n")
-            results = self.parallel_processor.process_pdfs_parallel(
-                pdf_files,
-                process_single_pdf_standalone
-            )
-        else:
-            self.logger.info(f" Procesamiento secuencial\n")
-            results = []
-            for pdf_file in pdf_files:
-                result = self.process_single_pdf(pdf_file)
-                results.append(result)
-                gc.collect()
+
+        self.logger.info(f" Procesamiento secuencial\n")
+        results = []
+        for i, pdf_file in enumerate(pdf_files, 1):
+            self.logger.info(f" **Progreso: {i}/{len(pdf_files)}")
+            result = self.process_pdf(pdf_file)
+            results.append(result)
+            gc.collect()
         
         successful = [r for r in results if r.get('success', False)]
         total_time = (datetime.now() - overall_start).total_seconds()
-        
         total_pages = sum(r.get('total_pages', 0) for r in successful)
         total_functional = sum(r.get('functional_pages', 0) for r in successful)
         total_generated = sum(r.get('pdfs_generated', 0) for r in successful)
@@ -255,10 +237,6 @@ class DocumentProcessor:
             'success': True
         }
 
-
-def process_single_pdf_standalone(pdf_path: Path) -> Dict:
-    processor = DocumentProcessor()
-    return processor.process_single_pdf(pdf_path)
 
 
 def main():

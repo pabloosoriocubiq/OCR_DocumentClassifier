@@ -18,9 +18,6 @@ CLASSIFICATION_CONFIDENCE_THRESHOLD = 0.25
 TEXT_PREVIEW_LENGTH = 400
 EARLY_STOPPING_CONFIDENCE = 0.55
 
-ENABLE_PARALLEL_PROCESSING = False
-MAX_PARALLEL_WORKERS = 2
-
 ENABLE_ROI_OCR = True
 ROI_HEADER_PERCENTAGE = 0.4
 ROI_FOOTER_PERCENTAGE = 0.3
@@ -53,7 +50,7 @@ DOCUMENT_TYPES = {
     },
     
     'PACKING_LIST': {
-        'primary_keywords': ['packing list', 'packinglist', 'packing list', 'packlist'],
+        'primary_keywords': ['packing list','pack list', 'packinglist', 'packing list', 'packlist'],
         'secondary_keywords': [
             'your order no', 'delivery no', 'packing list', 'package', 'part number',
             'delivery per', 'lb', 'swift code', 'total weight', 'carton',
