@@ -1,0 +1,7 @@
+venv_ocr/
+.vscode/
+clasificacionAntigua/
+pdfs_procesados/
+Prueba/
+*.log
+clasificacion/
