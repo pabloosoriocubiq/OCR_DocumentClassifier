@@ -151,15 +151,11 @@ class OCRProcessor:
         
     def rotate_image_by_angle(self, image, final_angle, confidence):
             import cv2
-            if confidence < ANGLE_CONFIDENCE_THRESHOLD:
-                return image
             
-            if final_angle <= ANGLE_TOLERANCE or final_angle >= (360 - ANGLE_TOLERANCE):
-                return image  
-            elif abs(final_angle - 90) <= ANGLE_TOLERANCE:
+            if abs(final_angle - 90) <= ANGLE_TOLERANCE:
                 self.logger.info("   Se detecta imagen rotada a la derecha, se realiza corrección.")
                 opencvImage = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
-                image = rotate_image_without_cropping(opencvImage, 180)
+                image = rotate_image_without_cropping(opencvImage, 90)
                 return image
             elif abs(final_angle - 180) <= ANGLE_TOLERANCE:
                 self.logger.info("   Se detecta imagen al revés, se realiza corrección.")
@@ -171,7 +167,5 @@ class OCRProcessor:
                 opencvImage = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
                 image = rotate_image_without_cropping(opencvImage, -90)
                 return image
-            
-            return image 
 
         

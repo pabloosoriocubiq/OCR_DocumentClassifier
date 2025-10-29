@@ -9,7 +9,7 @@ from src.config import (
     LOG_FILE,
     LOG_LEVEL,
     ENABLE_PARALLEL_PROCESSING,
-    ENABLE_ROI_OCR
+    ENABLE_ROI_OCR, ANGLE_CONFIDENCE_THRESHOLD
 )
 from src.utils.logger import setup_logging
 from src.converters.pdf_converter import PDFConverter
@@ -70,7 +70,7 @@ class DocumentProcessor:
                 
                 angle, ocr_angle_confidence = ocr.document_orientation_angle(image)
                 
-                if angle > 0:
+                if angle > 0 and ocr_angle_confidence > ANGLE_CONFIDENCE_THRESHOLD:
                     image = ocr.rotate_image_by_angle(image, angle, ocr_angle_confidence)
                     img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)               
                     image = Image.fromarray(img)
