@@ -98,7 +98,7 @@ class DocumentProcessor:
                     roi_count += 1
                 else:
                     text, ocr_confidence = self.ocr.extract_text_from_image(image)
-                    image.save("demo2.png")                                   
+                    image.save("demo.png")                                   
                     doc_type, primary_found, secondary_found, total_keywords, num_candidates = self.classifier.classify_page(text)
                     keywords = primary_found + secondary_found
                     used_roi_only = False 
