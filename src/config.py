@@ -74,7 +74,7 @@ DOCUMENT_TYPES = {
         'primary_keywords': ['packing slip', 'packingslip', 'packing slip', 'pack slip'],
         'secondary_keywords': [
 
-            'shipment reference', 'tracking number',
+            'shipment reference', 'tracking number', 'date',
             'customer', 'partner', 'packing slip', 'bill to', 'ship to',
             'load', 'unit', 'lb', 'kg', 'delivery terms', 'terms of delivery',
             'shipped to', 'load', 'ship via', 'terms', 'kg', 'order', 'order number',
@@ -118,9 +118,9 @@ DOCUMENT_TYPES = {
         'secondary_keywords': [
             'transport booking',
             'transport company',
-            'pick up:', 'delivery:',
+            'pick up:', 'delivery',
             'instructions details',
-            'shipment:'
+            'shipment'
         ],
         'min_secondary_matches': 2,
         'functional': False,

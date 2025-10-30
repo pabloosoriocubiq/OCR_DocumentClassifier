@@ -61,53 +61,46 @@ class DocumentProcessor:
                     image = self.ocr.rotate_image_by_angle(image, angle, ocr_angle_confidence)
                     img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)               
                     image = Image.fromarray(img)
-                    text, ocr_confidence, used_roi_only = self.ocr.extract_text_roi_strategy(image)
-                else:
-                    text, ocr_confidence, used_roi_only = self.ocr.extract_text_roi_strategy(image)  
-                             
-                doc_type_tmp, primary_found_tmp, secondary_found_tmp, total_keywords_tmp, num_candidates_tmp = self.classifier.classify_page(text)
-                keywords = primary_found_tmp + secondary_found_tmp
-                roi_usage = False
-                    
-                if num_candidates_tmp >=2:
-                    roi_usage = False
-                elif doc_type_tmp == "UNKNOWN" and len(keywords) == 0:
-                    roi_usage = False
-                else:
-                    doc_config = self.classifier.document_types.get(doc_type_tmp, {})
-                    is_functional = doc_config.get('functional', False)
-                    min_secondary = doc_config.get('min_secondary_matches', 0)
-                        
-                    if is_functional:
-                            
-                        if len(secondary_found_tmp) > min_secondary:
-                            roi_usage = True                       
-                        else:
-                            roi_usage = False
-                    else:
-                        roi_usage = True
-                    
-                if roi_usage:
 
-                    doc_type = doc_type_tmp
-                    primary_found = primary_found_tmp
-                    secondary_found = secondary_found_tmp
-                    total_keywords = total_keywords_tmp
-                    num_candidates = num_candidates_tmp
-                    keywords = primary_found + secondary_found
-                    roi_count += 1
+                text_roi, ocr_confidence_roi, used_roi_only = self.ocr.extract_text_roi_strategy(image)               
+                doc_type_roi, primary_roi, secondary_roi, total_keywords_roi, num_candidates_roi = self.classifier.classify_page(text_roi)
+                keywords_roi = primary_roi + secondary_roi
+                needs_full_ocr = False
+                    
+                if num_candidates_roi >=2:
+                    needs_full_ocr = True
+                elif doc_type_roi == "UNKNOWN" and len(keywords_roi) == 0:
+                    needs_full_ocr = True
                 else:
-                    text, ocr_confidence = self.ocr.extract_text_from_image(image)
-                    image.save("demo.png")                                   
-                    doc_type, primary_found, secondary_found, total_keywords, num_candidates = self.classifier.classify_page(text)
-                    keywords = primary_found + secondary_found
-                    used_roi_only = False 
+                    doc_config = self.classifier.document_types.get(doc_type_roi, {})
+                    if doc_config.get('functional', False):
+                        needs_full_ocr = True        
+                        
+                if needs_full_ocr:
+                    
+                    text_full, ocr_confidence_full = self.ocr.extract_text_from_image(image)
+                    text_combined = text_roi + " " + text_full
+                    doc_type, primary_found, secondary_found, total_keywords, num_candidates = self.classifier.classify_page(text_combined)
+                    keywords = primary_found + secondary_found + keywords_roi
+                    ocr_confidence = (ocr_confidence_roi + ocr_confidence_full) / 2
+                    used_roi_only = False   
+                else:
+                    doc_type = doc_type_roi
+                    primary = primary_roi
+                    secondary = secondary_roi
+                    total_keywords = total_keywords_roi
+                    num_candidates = num_candidates_roi
+                    ocr_confidence = ocr_confidence_roi
+                    used_roi_only = True
+                    roi_count += 1
+                    keywords = primary + secondary                       
+                   
             else:
                 angle, ocr_angle_confidence = self.ocr.document_orientation_angle(image)
                 image = self.ocr.rotate_image_by_angle(image, angle, ocr_angle_confidence)
                 text, ocr_confidence = self.ocr.extract_text_from_image(image)
-                doc_type, primary_found, secondary_found, total_keywords, num_candidates = self.classifier.classify_page(text)
-                keywords = primary_found + secondary_found
+                doc_type, primary, secondary, total_keywords, num_candidates = self.classifier.classify_page(text)
+                keywords = primary + secondary
                 used_roi_only = False 
             
 
