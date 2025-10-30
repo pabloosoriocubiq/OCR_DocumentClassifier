@@ -6,3 +6,5 @@ Prueba/
 *.log
 pdfs/
 clasificacion/
+*.pdf
+*.png
