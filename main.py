@@ -62,10 +62,10 @@ class DocumentProcessor:
                     img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)               
                     image = Image.fromarray(img)
 
-                text_roi, ocr_confidence_roi, used_roi_only = self.ocr.extract_text_roi_strategy(image)               
+                needs_full_ocr = False
+                text_roi, ocr_confidence_roi, used_roi_only = self.ocr.extract_text_roi_strategy(image, needs_full_ocr)               
                 doc_type_roi, primary_roi, secondary_roi, total_keywords_roi, num_candidates_roi = self.classifier.classify_page(text_roi)
                 keywords_roi = primary_roi + secondary_roi
-                needs_full_ocr = False
                     
                 if num_candidates_roi >=2:
                     needs_full_ocr = True
@@ -78,7 +78,7 @@ class DocumentProcessor:
                         
                 if needs_full_ocr:
                     
-                    text_full, ocr_confidence_full = self.ocr.extract_text_from_image(image)
+                    text_full, ocr_confidence_full, used_footer = self.ocr.extract_text_roi_strategy(image, needs_full_ocr) 
                     text_combined = text_roi + " " + text_full
                     doc_type, primary_found, secondary_found, total_keywords, num_candidates = self.classifier.classify_page(text_combined)
                     keywords = primary_found + secondary_found + keywords_roi
