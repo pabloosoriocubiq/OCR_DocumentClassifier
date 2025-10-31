@@ -18,7 +18,7 @@ Procesa PDFs mixtos, clasifica páginas por tipo (Invoice, Packing List, etc.) y
 
 1. Clonar el repositorio:
 ```bash
-git clone https://github.com/tu-usuario/pdf-ocr-classifier.git
+git clone https://github.com/pabloosoriocubiq/OCR_DocumentClassifier.git
 cd pdf-ocr-classifier
 ```
 
