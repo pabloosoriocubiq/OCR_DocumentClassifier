@@ -50,7 +50,8 @@ class OCRProcessor:
         try:
             self.ocr = PaddleOCR(
                 use_textline_orientation= OCR_USE_ANGLE_CLS,
-                lang=lang
+                lang=lang,
+                device = "cpu"
             )
             self.document_orientation = DocImgOrientationClassification(model_name="PP-LCNet_x1_0_doc_ori")
             self.logger.info("✓ PaddleOCR inicializado correctamente")
