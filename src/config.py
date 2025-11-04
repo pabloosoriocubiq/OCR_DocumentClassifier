@@ -78,14 +78,14 @@ DOCUMENT_TYPES = {
             'customer', 'partner', 'packing slip', 'bill to', 'ship to',
             'load', 'unit', 'lb', 'kg', 'delivery terms', 'terms of delivery',
             'shipped to', 'load', 'ship via', 'terms', 'kg', 'order', 'order number',
-            'package quantity', 'shipped quantity', 'gross', 'pos',
+            'package quantity', 'quantity', 'item', 'shipped quantity', 'gross', 'pos',
             'back order', 'weight', 'boxes', 'content', 'contents', 'paperwork',
             'ship-from warehouse', 'total weight', 'packaged', 'sealed', 'sealed by',
             'ordered', 'shipped', 'line item', 'catalog', 'qty', 'oty', 'consolidated shipment',
-            'um', 'ship from', 'pack', 'pack date', 'uom', 'consolidated',
+            'um', 'ship from', 'pack', 'pack date', 'uom', 'consolidated', 'subtotal',
             'license type', 'license number', 'packing details', 'condition',
-            'serial number', 'po no', 'pack slip', 'pack slip No',
-            'shipped to', 'exporter', 'ship from', 'waybill'
+            'serial number', 'po no', 'pack slip', 'pack slip No', 'invoice',
+            'shipped to', 'exporter', 'ship from', 'waybill', 'shipping'
         ],
         'min_secondary_matches': 3,
         'functional': True,

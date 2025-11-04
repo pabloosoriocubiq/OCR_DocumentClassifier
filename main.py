@@ -69,12 +69,10 @@ class DocumentProcessor:
                     
                 if num_candidates_roi >=2:
                     needs_full_ocr = True
-                elif doc_type_roi == "UNKNOWN" and len(keywords_roi) == 0:
+                elif doc_type_roi == "UNKNOWN" or len(keywords_roi) == 0:
                     needs_full_ocr = True
                 else:
-                    doc_config = self.classifier.document_types.get(doc_type_roi, {})
-                    if doc_config.get('functional', False):
-                        needs_full_ocr = True        
+                        needs_full_ocr = False        
                         
                 if needs_full_ocr:
                     
