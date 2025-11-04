@@ -7,7 +7,7 @@ PDF_INPUT_FOLDER = BASE_DIR / "pdfs"
 CLASSIFICATION_FOLDER = BASE_DIR / "clasificacion"
 PDF_OUTPUT_FOLDER = BASE_DIR / "pdfs_procesados"
 
-PDF_DPI = 300
+PDF_DPI = 180
 IMAGE_FORMAT = "PNG"
 
 OCR_LANGUAGE = "en"
@@ -31,7 +31,7 @@ DOCUMENT_TYPES = {
         'secondary_keywords': [
             'payment terms', 'terms of payment', 'value', 'deduction',
             'invoice #', 'net 30', 'net 30 days', 'tracking',
-            'amount due', 'balance due', 'tax', 'tax rate', 'number', 'amount',
+            'amount due', 'balance due', 'tax', 'tax rate', 'amount',
             'subtotal', 'tax amount', 'invoice', 'total amount', 'unit', 'unit price',
             'extended price', 'price', '(usd)', 'usd', 'freight', 'products',
             'remit to', 'wire transfer', 'swift code', 'IRN', 'purchase',
@@ -71,7 +71,7 @@ DOCUMENT_TYPES = {
     },
     
     'PACKING_SLIP': {
-        'primary_keywords': ['packing slip', 'packingslip', 'packing slip', 'pack slip'],
+        'primary_keywords': ['packing slip', 'packing slip no', 'packingslip', 'packing slip', 'pack slip'],
         'secondary_keywords': [
 
             'shipment reference', 'tracking number', 'date',
@@ -79,10 +79,10 @@ DOCUMENT_TYPES = {
             'load', 'unit', 'lb', 'kg', 'delivery terms', 'terms of delivery',
             'shipped to', 'load', 'ship via', 'terms', 'kg', 'order', 'order number',
             'package quantity', 'shipped quantity', 'gross', 'pos',
-            'back order', 'weight', 'boxes', 'content', 'contents',
-            'ship-from warehouse', 'total weight',
-            'ordered', 'shipped', 'line item', 'catalog', 'qty', 'oty',
-            'um', 'ship from', 'pack', 'pack date', 'uom', 
+            'back order', 'weight', 'boxes', 'content', 'contents', 'paperwork',
+            'ship-from warehouse', 'total weight', 'packaged', 'sealed', 'sealed by',
+            'ordered', 'shipped', 'line item', 'catalog', 'qty', 'oty', 'consolidated shipment',
+            'um', 'ship from', 'pack', 'pack date', 'uom', 'consolidated',
             'license type', 'license number', 'packing details', 'condition',
             'serial number', 'po no', 'pack slip', 'pack slip No',
             'shipped to', 'exporter', 'ship from', 'waybill'
@@ -94,7 +94,8 @@ DOCUMENT_TYPES = {
     
     'CERTIFICATE_ORIGIN': {
         'primary_keywords': [
-            'certificate of origin', 'certificate', 'certificate of conformance'
+            'certificate of origin', 'certificate', 'certificate of conformance', 'certificado de origen',
+            'certificate of origen'
         ],
         'secondary_keywords': [
             'conformance', 'manufacturer', 'approving', 'faa', 'faa form',
