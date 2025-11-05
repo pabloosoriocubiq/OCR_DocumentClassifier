@@ -192,26 +192,30 @@ class DocumentClassifier:
         MAX_PAGES = 10
 
         row_data = {'Path': pdf_path, 'PDF_Name': pdf_name}
-        for i in range(1, MAX_PAGES):
+        for i in range(1, MAX_PAGES + 1):
             if i <= len(classifications):
                 page = classifications[i-1]
                 doc_type = page.get('document_type', 'UNKNOWN')
                 is_func = page.get('functional', False)
                 conf = page.get('ocr_confidence', 0.0)
                 
-                row_data[f'Pag_{i}'] = f"{doc_type} (x)" if (not is_func and doc_type != "UNKNOWN") else doc_type
-                row_data[f'Confidence_{i}'] = f"{conf * 100:.1f}%" 
+                if (not is_func or doc_type == "UNKNOWN"):
+                    row_data[f'Pag_{i}'] = f"{doc_type} (✗)"
+                else:
+                    row_data[f'Pag_{i}'] = doc_type 
+                    
+                row_data[f'Confidence_{i}'] = f"{conf * 100:.2f}%" 
             else:
                 row_data[f'Pag_{i}'] = ""
                 row_data[f'Confidence_{i}'] = ""
         
         if os.path.exists(excel_path):
-            wb = load_workbook(excel_path)
-            work_sheet = wb.active
+            work_book = load_workbook(excel_path)
+            work_sheet = work_book.active
         else:
-            wb = Workbook()
-            work_sheet = wb.active
-            work_sheet.title = "reporte_clasificacion"
+            work_book = Workbook()
+            work_sheet = work_book.active
+            work_sheet.title = "Reporte De Clasificacion"
             
             headers = ['Path', 'PDF_Name']
             for i in range(1, MAX_PAGES + 1):
@@ -237,5 +241,5 @@ class DocumentClassifier:
             for cell in row:
                 cell.alignment = Alignment(horizontal='center')   
         
-        wb.save(excel_path)
+        work_book.save(excel_path)
         self.logger.info(f" ✓ Excel actualizado: {excel_path}")
