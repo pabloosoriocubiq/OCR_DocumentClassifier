@@ -45,7 +45,7 @@ class OCRProcessor:
     def __init__(self, lang: str = OCR_LANGUAGE):
 
         self.logger = Logger.get_logger(__name__)
-        self.logger.info(f"✔ Inicializando PaddleOCR (idioma: {lang})...")
+        self.logger.info(f"✓ Inicializando PaddleOCR (idioma: {lang})...")
         
         try:
             self.ocr = PaddleOCR(

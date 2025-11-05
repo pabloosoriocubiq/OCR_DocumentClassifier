@@ -2,6 +2,7 @@ venv_ocr/
 .vscode/
 clasificacionAntigua/
 pdfs_procesados/
+Paddlex/
 Prueba/
 *.log
 pdfs/

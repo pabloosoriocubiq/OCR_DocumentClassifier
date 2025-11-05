@@ -1,8 +1,10 @@
 from typing import Tuple, List, Dict
 from pathlib import Path
 import json
+from openpyxl import Workbook, load_workbook
+from openpyxl.styles import Font, Alignment
 import re
-
+import os
 from src.utils.logger import Logger
 from src.config import DOCUMENT_TYPES, CLASSIFICATION_FOLDER
 
@@ -153,7 +155,6 @@ class DocumentClassifier:
         return json_path
     
     def _generate_text_report(self, report_data: Dict, report_path: Path):
-        """Genera reporte legible."""
         with open(report_path, 'w', encoding='utf-8') as f:
             f.write("="*70 + "\n")
             f.write("REPORTE DE CLASIFICACIÓN\n")
@@ -182,3 +183,59 @@ class DocumentClassifier:
                 f.write(f"{i}. {group['type']}\n")
                 f.write(f"   Páginas: {group['start_page']} - {group['end_page']}\n")
                 f.write(f"   Total: {len(group['pages'])} páginas\n\n")
+                
+    def save_classification_excel(self, 
+                              pdf_path: str,
+                              pdf_name: str,
+                              classifications: List[Dict],
+                              excel_path: str = "reporte_clasificacion.xlsx"):
+        MAX_PAGES = 10
+
+        row_data = {'Path': pdf_path, 'PDF_Name': pdf_name}
+        for i in range(1, MAX_PAGES):
+            if i <= len(classifications):
+                page = classifications[i-1]
+                doc_type = page.get('document_type', 'UNKNOWN')
+                is_func = page.get('functional', False)
+                conf = page.get('ocr_confidence', 0.0)
+                
+                row_data[f'Pag_{i}'] = f"{doc_type} (x)" if (not is_func and doc_type != "UNKNOWN") else doc_type
+                row_data[f'Confidence_{i}'] = f"{conf * 100:.1f}%" 
+            else:
+                row_data[f'Pag_{i}'] = ""
+                row_data[f'Confidence_{i}'] = ""
+        
+        if os.path.exists(excel_path):
+            wb = load_workbook(excel_path)
+            work_sheet = wb.active
+        else:
+            wb = Workbook()
+            work_sheet = wb.active
+            work_sheet.title = "reporte_clasificacion"
+            
+            headers = ['Path', 'PDF_Name']
+            for i in range(1, MAX_PAGES + 1):
+                headers.extend([f'Pag {i}', f'Confidence {i}'])
+            work_sheet.append(headers)
+            
+            for cell in work_sheet[1]:
+                cell.font = Font(bold=True)
+                cell.alignment = Alignment(horizontal='center')
+                           
+        row_values = [row_data['Path'], row_data['PDF_Name']]
+        for i in range(1, MAX_PAGES + 1):
+            row_values.extend([row_data[f'Pag_{i}'], row_data[f'Confidence_{i}']])
+        work_sheet.append(row_values)
+
+        work_sheet.column_dimensions['A'].width = 40
+        work_sheet.column_dimensions['B'].width = 25
+        for i in range(MAX_PAGES):
+            work_sheet.column_dimensions[chr(67 + i*2)].width = 21 
+            work_sheet.column_dimensions[chr(68 + i*2)].width = 13
+            
+        for row in work_sheet.iter_rows():
+            for cell in row:
+                cell.alignment = Alignment(horizontal='center')   
+        
+        wb.save(excel_path)
+        self.logger.info(f" ✓ Excel actualizado: {excel_path}")

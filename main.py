@@ -26,7 +26,7 @@ class DocumentProcessor:
         self.ocr = OCRProcessor()
         self.classifier = DocumentClassifier()
         self.generator = PDFGenerator()
-        self.logger.info("✔ Sistema listo\n")
+        self.logger.info("✓ Sistema listo\n")
     
     def process_pdf(self, pdf_path: Path) -> Dict:
         
@@ -51,7 +51,7 @@ class DocumentProcessor:
             page_num = page_data['page_number']
             image = page_data['image']
             
-            self.logger.info(f"📄 Procesando página {page_num}/{total_pages}")
+            self.logger.info(f" - Procesando página {page_num}/{total_pages}")
             
             if ENABLE_ROI_OCR:
                 
@@ -120,13 +120,22 @@ class DocumentProcessor:
             self.logger.info(
                 f"   {doc_type} {status}{roi_indicator} "
                 f"(keywords: {total_keywords})"
-            )
-            
+            ) 
             del image
             gc.collect()
         
         document_groups = self.classifier.group_consecutive_pages(classifications)
-
+        
+        
+        excel_path = Path("clasificacion/reporte_clasificacion.xlsx")
+        
+        self.classifier.save_classification_excel(
+            pdf_path=str(pdf_path),
+            pdf_name=pdf_path.name,
+            classifications=classifications,
+            excel_path=str(excel_path)            
+        )
+        
         self.classifier.save_classification_report(
             pdf_path.name,
             classifications,
@@ -158,6 +167,7 @@ class DocumentProcessor:
             f"   Páginas: {functional_pages} funcionales, "
             f"{total_pages - functional_pages} eliminadas"
         )
+        
         if ENABLE_ROI_OCR and roi_count > 0:
             self.logger.info(f"   Optimización ROI: {roi_count}/{total_pages} páginas")
         self.logger.info(f"   PDFs generados: {len(generated_pdfs)}\n")
@@ -178,7 +188,6 @@ class DocumentProcessor:
         
         overall_start = datetime.now()
         
-
         self.logger.info(f" Procesamiento secuencial\n")
         results = []
         for i, pdf_file in enumerate(pdf_files, 1):
@@ -229,7 +238,6 @@ class DocumentProcessor:
         }
 
 
-
 def main():
     PDF_INPUT_FOLDER.mkdir(exist_ok=True)
     
@@ -237,7 +245,7 @@ def main():
     results = processor.process_all_pdfs()
     
     if results['success']:
-        processor.logger.debug("\n✔ PROCESAMIENTO COMPLETADO")
+        processor.logger.debug("\n✓ PROCESAMIENTO COMPLETADO")
         processor.logger.debug(f"PDFs procesados: {results['successful']}/{results['total_pdfs']}")
         processor.logger.debug(f"Tiempo total: {results['total_time']:.2f}s")
 
